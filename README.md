@@ -1,4 +1,4 @@
-구글계정 환경셋팅 필수
+docker 셋팅 후 구글계정 환경셋팅 필수
 
 참고 자료
 1) https://docs.n8n.io/hosting/installation/docker/
