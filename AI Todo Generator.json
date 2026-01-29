@@ -1,0 +1,353 @@
+{
+  "name": "AI Todo Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5c1f1654-817c-4a5d-b2e5-f7f5d22c55a0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        -176
+      ],
+      "id": "16a90f2d-38fe-4da4-8a20-73032089ecd2",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "0d0655b1-1b70-42ad-9e52-94c95bd2d85b",
+      "name": "RSS Read1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        144
+      ],
+      "id": "0402abf0-d5a6-46e2-b434-e557f9aba5e3",
+      "name": "RSS Read2"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -16
+      ],
+      "id": "af10af53-ca0e-4eaf-817f-d69b4e569a4a",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        -16
+      ],
+      "id": "c8c56693-1c14-4305-a49b-218b29326cde",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "604f361c-dac4-4aff-8d04-da9377f6ac02",
+              "name": "URLS",
+              "value": "[\"http://venturebeat.com/feed/\",\"http://www.theverge.com/rss/full.xml\",\"https://techcrunch.com/feed/\"]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        -16
+      ],
+      "id": "3cfd595c-dca3-4057-aae7-e6887b7f725f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "URLS",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -16
+      ],
+      "id": "e55527b4-2b8e-4449-a3b2-edab8673bd38",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.URLS }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        1408,
+        -16
+      ],
+      "id": "5ca86480-5caa-4e27-8b76-49b441417f69",
+      "name": "RSS Read3"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "너는 뉴스레터 작가야. 주어진 RSS 피드 결과를 바탕으로, 오늘의 새로운 Tech 소식을 친근한 말투로 작성해줘. 이 떄, html 양식으로 작성하여 메일 가독성을 높이고, 중간중간 이미지 URL을 넣어서  더 아름다운 뉴스레터가 되게 해줘. 소식 나열이 아니라, 하나의 완성된 프로덕션 레벨의 뉴스레터 여야 해.",
+              "role": "model"
+            },
+            {
+              "content": "={{ JSON.stringify($json.data, null, 2) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        -16
+      ],
+      "id": "49460f5a-e738-43d5-a5c5-35ed5f085db4",
+      "name": "Message a model"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -16
+      ],
+      "id": "16c1955e-16df-4d27-8585-d6df2ce9b8a2",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "subject": "이번주의 AI 뉴스레터",
+        "message": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        128
+      ],
+      "id": "76398387-f7f0-4043-ad31-d077b159b4b4",
+      "name": "Send a message",
+      "webhookId": "210aacc7-4003-4576-bb3c-ebd4567c36cc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CTJvG2pRr392uKmP",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "RSS Read3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "3abff4ad-da27-4be2-a94b-1da1ec338830",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "df75530ffade8a5567392fd66b0dbf31d4bcb8c41cf0595f599423628523aab2"
+  },
+  "id": "qrzssEu36VF4AJX52WSe7",
+  "tags": []
+}
